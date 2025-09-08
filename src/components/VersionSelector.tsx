@@ -28,7 +28,7 @@ const serverTypes: ServerType[] = [
   {
     id: 'paper',
     name: 'Paper',
-    description: 'High performance Minecraft server with advanced optimizations and plugin support',
+    description: 'Untuk kebutuhan server dengan menggunakan plugins',
     icon: <Server className="w-8 h-8" />,
     color: 'from-orange-400 to-red-500',
     gradient: 'bg-gradient-to-br from-orange-500/10 to-red-600/10',
@@ -36,13 +36,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.1', '1.21', '1.20.6', '1.20.5', '1.20.4', '1.20.2', '1.20.1', '1.20', '1.19.4', '1.19.3', '1.19.2', '1.19.1', '1.19', '1.18', '1.16.5', '1.15', '1.12.2'],
     category: 'minecraft',
     popularity: 95,
-    lastUpdate: '2 days ago',
-    features: ['High Performance', 'Plugin Support', 'Anti-Cheat']
+    lastUpdate: '2 hari yang lalu',
+    features: ['Performa Tinggi', 'Plugin Support']
   },
   {
     id: 'neoforge',
     name: 'Neo Forge',
-    description: 'Modern Minecraft modding platform forked from Forge with enhanced features',
+    description: 'Untuk kebutuhan server dengan menggunakan mods / modspack',
     icon: <Zap className="w-8 h-8" />,
     color: 'from-yellow-400 to-orange-500',
     gradient: 'bg-gradient-to-br from-yellow-500/10 to-orange-600/10',
@@ -50,13 +50,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21', '1.20.6', '1.20.5', '1.20.4', '1.20.3', '1.20.2'],
     category: 'modded',
     popularity: 88,
-    lastUpdate: '1 week ago',
-    features: ['Modern API', 'Enhanced Performance', 'Active Development']
+    lastUpdate: '1 hari yang lalu',
+    features: ['Modern Mods', 'Mods Support']
   },
   {
     id: 'archlight',
     name: 'Archlight',
-    description: 'High-performance Minecraft server software with advanced optimization features',
+    description: 'Untuk kebutuhan server dengan menggunakan mods dan plugins secara bersamaan',
     icon: <Shield className="w-8 h-8" />,
     color: 'from-blue-400 to-purple-500',
     gradient: 'bg-gradient-to-br from-blue-500/10 to-purple-600/10',
@@ -64,13 +64,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.1', '1.21', '1.20.4', '1.20.2', '1.20.1', '1.20', '1.19.4', '1.19.2', '1.18.2', '1.17.1', '1.16.5'],
     category: 'minecraft',
     popularity: 75,
-    lastUpdate: '3 days ago',
-    features: ['High Performance', 'Optimized', 'Modern']
+    lastUpdate: '3 hari yang lalu',
+    features: ['Performa Tinggi', 'Gabungan Mods dan Plugins']
   },
   {
     id: 'forge',
     name: 'Forge',
-    description: 'Powerful Minecraft modding platform with extensive mod compatibility',
+    description: 'Untuk kebutuhan server dengan menggunakan mods / modspack',
     icon: <Wrench className="w-8 h-8" />,
     color: 'from-gray-500 to-yellow-500',
     gradient: 'bg-gradient-to-br from-gray-600/10 to-yellow-600/10',
@@ -78,13 +78,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.2', '1.20.1', '1.20', '1.19.4', '1.19.3', '1.19.2', '1.19.1', '1.19', '1.18.2', '1.18.1', '1.18', '1.17.1', '1.16.5', '1.12.2'],
     category: 'modded',
     popularity: 92,
-    lastUpdate: '5 days ago',
-    features: ['Mod Support', 'Advanced API', 'Large Community']
+    lastUpdate: '5 hari yang lalu',
+    features: ['Mod Support', 'Modern Mod']
   },
   {
     id: 'fabric',
     name: 'Fabric',
-    description: 'Lightweight and fast modding toolchain for modern Minecraft versions',
+    description: 'Untuk kebutuhan server dengan menggunakan mods / modspack',
     icon: <Code className="w-8 h-8" />,
     color: 'from-green-400 to-blue-500',
     gradient: 'bg-gradient-to-br from-green-500/10 to-blue-600/10',
@@ -92,13 +92,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21', '1.20.6', '1.20.5', '1.20.4', '1.20.3', '1.20.2', '1.20.1', '1.20', '1.19.4', '1.19.3', '1.19.2', '1.19.1', '1.18.2', '1.18.1', '1.18'],
     category: 'modded',
     popularity: 85,
-    lastUpdate: '1 day ago',
-    features: ['Fast Loading', 'Modern', 'Lightweight']
+    lastUpdate: '1 hari yang lalu',
+    features: ['Mods Support', 'Modern Mods', 'Optimasi Tinggi']
   },
   {
     id: 'velocity',
     name: 'Velocity',
-    description: 'Next-generation Minecraft proxy with superior performance and security',
+    description: 'Untuk kebutuhan server dengan menggunakan proxy atau hub server',
     icon: <Globe className="w-8 h-8" />,
     color: 'from-cyan-400 to-blue-500',
     gradient: 'bg-gradient-to-br from-cyan-500/10 to-blue-600/10',
@@ -106,13 +106,13 @@ const serverTypes: ServerType[] = [
     versions: ['3.4.0', '3.3.0', '3.2.0', '3.1.2', '1.1.9', '1.0.10'],
     category: 'proxy',
     popularity: 78,
-    lastUpdate: '1 week ago',
-    features: ['High Performance', 'Security', 'Modern']
+    lastUpdate: '1 hari yang lalu',
+    features: ['Performa Tinggi', 'Security Tambahan', 'Modern']
   },
   {
     id: 'purpur',
     name: 'Purpur',
-    description: 'Feature-rich Paper fork with extensive customization and performance improvements',
+    description: 'Untuk kebutuhan server dengan menggunakan plugins tapi dengan fitur tambahan',
     icon: <Database className="w-8 h-8" />,
     color: 'from-purple-400 to-pink-500',
     gradient: 'bg-gradient-to-br from-purple-400/10 to-pink-600/10',
@@ -120,13 +120,13 @@ const serverTypes: ServerType[] = [
     versions: ['1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.2', '1.20.1', '1.20'],
     category: 'minecraft',
     popularity: 82,
-    lastUpdate: '4 days ago',
-    features: ['Customizable', 'High Performance', 'Feature-Rich']
+    lastUpdate: '4 hari yang lalu',
+    features: ['Fork Jar', 'Performa Tinggi', 'Fiture Tambahan']
   },
   {
     id: 'mohist',
     name: 'Mohist',
-    description: 'Hybrid Minecraft server combining Forge mods with Bukkit plugins',
+    description: 'Untuk kebutuhan server dengan menggunakan mods dan plugins secara bersamaan',
     icon: <Shield className="w-8 h-8" />,
     color: 'from-purple-400 to-pink-500',
     gradient: 'bg-gradient-to-br from-purple-500/10 to-pink-600/10',
@@ -134,8 +134,8 @@ const serverTypes: ServerType[] = [
     versions: ['1.20.2', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.7.10'],
     category: 'modded',
     popularity: 65,
-    lastUpdate: '4 days ago',
-    features: ['Forge + Bukkit', 'Hybrid', 'Versatile']
+    lastUpdate: '4 hari yang lalu',
+    features: ['Forge + Bukkit', 'Support Mods dan Plugins',]
   }
 ];
 
@@ -282,11 +282,11 @@ const downloadUrls: Record<string, Record<string, string>> = {
 };
 
 const categories = [
-  { id: 'all', name: 'All Servers', icon: <Server className="w-4 h-4" />, count: serverTypes.length },
-  { id: 'minecraft', name: 'Minecraft', icon: <Server className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'minecraft').length },
+  { id: 'all', name: 'Semua Jar', icon: <Server className="w-4 h-4" />, count: serverTypes.length },
+  { id: 'minecraft', name: 'Plugins', icon: <Server className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'minecraft').length },
   { id: 'modded', name: 'Modded', icon: <Wrench className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'modded').length },
   { id: 'proxy', name: 'Proxy', icon: <Globe className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'proxy').length },
-  { id: 'other', name: 'Other', icon: <Database className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'other').length }
+  { id: 'other', name: 'Lainnya', icon: <Database className="w-4 h-4" />, count: serverTypes.filter(s => s.category === 'other').length }
 ];
 
 export default function VersionSelector({ serverId, serverName, apiKey, onLogout, onBackToServerSelect }: VersionSelectorProps) {
@@ -515,7 +515,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
                     Version Manager
                   </h1>
-                  <p className="text-slate-400 text-lg">Managing: <span className="text-blue-400 font-semibold">{serverName}</span></p>
+                  <p className="text-slate-400 text-lg">Mengelola Server: <span className="text-blue-400 font-semibold">{serverName}</span></p>
                   <p className="text-slate-500 text-sm">Server ID: <span className="font-mono">{serverId}</span></p>
                 </div>
               </div>
@@ -526,7 +526,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search servers..."
+                  placeholder="Cari Jar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-6 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 backdrop-blur-sm w-full sm:w-80 transition-all"
@@ -535,14 +535,14 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 text-slate-400">
                   <Users className="w-4 h-4" />
-                  <span className="text-sm">{filteredServers.length} servers available</span>
+                  <span className="text-sm">{filteredServers.length} Server Jar Tersedia</span>
                 </div>
                 <button
                   onClick={onBackToServerSelect}
                   className="flex items-center space-x-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600/50 hover:border-slate-500/50 rounded-lg text-slate-300 hover:text-white transition-all"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back</span>
+                  <span>Kembali</span>
                 </button>
                 <button
                   onClick={onLogout}
@@ -725,9 +725,9 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
               <Server className="relative w-20 h-20 text-slate-600 mx-auto mb-6" />
             </div>
-            <h3 className="text-2xl font-semibold text-slate-400 mb-3">No servers found</h3>
+            <h3 className="text-2xl font-semibold text-slate-400 mb-3">Tidak ada jar yang di temukan</h3>
             <p className="text-slate-500 max-w-md mx-auto">
-              Try adjusting your search terms or category filter to find the perfect server software for your needs.
+              Silahkan memilih filter kategori yang tersedia.
             </p>
           </div>
         )}
@@ -774,7 +774,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
             
             {/* Features */}
             <div className="p-6 border-b border-slate-700/50">
-              <h4 className="text-lg font-semibold text-white mb-3">Key Features</h4>
+              <h4 className="text-lg font-semibold text-white mb-3">Fiture yang tersedia</h4>
               <div className="flex flex-wrap gap-2">
                 {selectedServer.features.map((feature) => (
                   <span
@@ -789,7 +789,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
             
             {/* Versions */}
             <div className="p-6">
-              <h4 className="text-lg font-semibold text-white mb-4">Available Versions</h4>
+              <h4 className="text-lg font-semibold text-white mb-4">Versi yang tersedia</h4>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {selectedServer.versions.map((version, index) => {
                   const isInstalling = installingVersion === `${selectedServer.id}-${version}`;
