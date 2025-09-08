@@ -347,8 +347,15 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       
       const { token, socket } = await getWebSocketToken();
       
+      // Try to fix WebSocket URL for proxy
+      const fixedSocketUrl = socket.replace('wss://node1.exluhost.my.id:8080')
+                                   .replace('ws://node1.exluhost.my.id:8080');
+      
       addWebSocketLog('🔌 Connecting to WebSocket...');
-      const ws = new WebSocket(socket);
+      addWebSocketLog(`📍 Original URL: ${socket}`);
+      addWebSocketLog(`📍 Fixed URL: ${fixedSocketUrl}`);
+      
+      const ws = new WebSocket(fixedSocketUrl);
       
       ws.onopen = () => {
         addWebSocketLog('✅ WebSocket connection established');
@@ -460,6 +467,41 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
 
   const clearWebSocketLogs = () => {
     setWebsocketLogs([]);
+  };
+
+  // Alternative: Polling-based progress tracking
+  const trackDownloadWithPolling = async (expectedSize: number = 100) => {
+    addWebSocketLog('🔄 Starting polling-based progress tracking...');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15; // Simulate progress
+      
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        addWebSocketLog('✅ Download completed (simulated)');
+      }
+      
+      const downloaded = (expectedSize * progress) / 100;
+      const speed = (Math.random() * 5 + 1).toFixed(1); // Random speed
+      
+      setDownloadProgress({
+        downloaded: parseFloat(downloaded.toFixed(1)),
+        total: expectedSize,
+        percent: Math.round(progress),
+        speed: `${speed} MB/s`
+      });
+      
+      addWebSocketLog(`📊 Progress: ${Math.round(progress)}% (${downloaded.toFixed(1)}/${expectedSize} MB)`);
+    }, 1000);
+    
+    return interval;
+  };
+
+  const testPollingProgress = () => {
+    addWebSocketLog('🧪 Testing polling-based progress...');
+    trackDownloadWithPolling(156.8); // Simulate 156.8 MB download
   };
 
   const installVersion = async (serverType: string, version: string) => {
@@ -598,6 +640,12 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
               >
                 Test WebSocket
+              </button>
+              <button
+                onClick={testPollingProgress}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+              >
+                Test Polling
               </button>
               <button
                 onClick={clearWebSocketLogs}
