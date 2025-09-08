@@ -13,7 +13,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
   const validateApiKey = async (apiKey: string): Promise<boolean> => {
     try {
-      const response = await fetch('konek/api/client', {
+      const response = await fetch('https://console.exluhost.my.id/api/client', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
