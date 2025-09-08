@@ -330,8 +330,8 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
         paper: 45.2,
         purpur: 55.1,
         fabric: 1.2, // Fabric is just installer
-        forge: 68.8,
-        neoforge: 118.9,
+        forge: 100.8,
+        neoforge: 150.9,
         velocity: 18.6,
         mohist: 130.3,
         archlight: 10.4
