@@ -24,7 +24,7 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
     setError(null);
     
     try {
-      const response = await fetch('konek/api/client', {
+      const response = await fetch('https://console.exluhost.my.id/api/client', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
