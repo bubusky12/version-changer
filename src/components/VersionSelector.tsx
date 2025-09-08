@@ -302,7 +302,6 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     percent: number;
     speed: string;
   } | null>(null);
-  const [websocketLogs, setWebsocketLogs] = useState<string[]>([]);
 
   const filteredServers = serverTypes.filter(server => {
     const matchesSearch = server.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -311,198 +310,6 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     return matchesSearch && matchesCategory;
   }).sort((a, b) => b.popularity - a.popularity);
 
-  // WebSocket Test Functions
-  const getWebSocketToken = async () => {
-    try {
-      console.log('🔍 Testing WebSocket token request...');
-      const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/websocket`, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Accept': 'Application/vnd.pterodactyl.v1+json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ WebSocket token received:', data);
-      
-      addWebSocketLog(`✅ WebSocket token obtained successfully`);
-      addWebSocketLog(`📍 Socket URL: ${data.data.socket}`);
-      addWebSocketLog(`🔑 Token length: ${data.data.token.length} chars`);
-      
-      return data.data;
-    } catch (error) {
-      console.error('❌ WebSocket token error:', error);
-      addWebSocketLog(`❌ Failed to get WebSocket token: ${error instanceof Error ? error.message : String(error)}`);
-      throw error;
-    }
-  };
-
-  const testWebSocketConnection = async () => {
-    try {
-      addWebSocketLog('🚀 Starting WebSocket connection test...');
-      
-      const { token, socket } = await getWebSocketToken();
-      
-      // Try to fix WebSocket URL for proxy
-      const fixedSocketUrl = socket.replace('wss://node1.exluhost.my.id:8080')
-                                   .replace('ws://node1.exluhost.my.id:8080');
-      
-      addWebSocketLog('🔌 Connecting to WebSocket...');
-      addWebSocketLog(`📍 Original URL: ${socket}`);
-      addWebSocketLog(`📍 Fixed URL: ${fixedSocketUrl}`);
-      
-      const ws = new WebSocket(fixedSocketUrl);
-      
-      ws.onopen = () => {
-        addWebSocketLog('✅ WebSocket connection established');
-        
-        // Authenticate
-        ws.send(JSON.stringify({
-          event: 'auth',
-          args: [token]
-        }));
-        addWebSocketLog('🔐 Authentication sent');
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          console.log('📨 WebSocket message:', message);
-          
-          addWebSocketLog(`📨 Event: ${message.event}`);
-          
-          if (message.event === 'console output') {
-            const output = message.args[0];
-            addWebSocketLog(`📄 Console: ${output}`);
-            
-            // Test parsing download progress
-            parseDownloadProgress(output);
-          } else if (message.event === 'auth success') {
-            addWebSocketLog('✅ WebSocket authentication successful');
-          } else if (message.event === 'jwt error') {
-            addWebSocketLog(`❌ JWT Error: ${message.args[0]}`);
-          } else {
-            addWebSocketLog(`ℹ️ Other event: ${JSON.stringify(message)}`);
-          }
-        } catch (error) {
-          addWebSocketLog(`❌ Error parsing message: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      };
-      
-      ws.onclose = (event) => {
-        addWebSocketLog(`🔌 WebSocket closed: Code ${event.code} - ${event.reason || 'No reason'}`);
-      };
-      
-      ws.onerror = (error) => {
-        addWebSocketLog(`❌ WebSocket error: ${error}`);
-      };
-      
-      // Close connection after 30 seconds for testing
-      setTimeout(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-          addWebSocketLog('⏰ Test completed - connection closed');
-        }
-      }, 30000);
-      
-    } catch (error) {
-      addWebSocketLog(`❌ WebSocket test failed: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  };
-
-  const parseDownloadProgress = (output: string) => {
-    // Test different progress patterns
-    const patterns = [
-      // Pattern 1: "Downloaded 45.2MB of 156.8MB (28%)"
-      /Downloaded\s+(\d+\.?\d*)\s*MB\s+of\s+(\d+\.?\d*)\s*MB\s+\((\d+)%\)/i,
-      // Pattern 2: "45.2MB/156.8MB (28%)"
-      /(\d+\.?\d*)\s*MB\/(\d+\.?\d*)\s*MB\s+\((\d+)%\)/i,
-      // Pattern 3: "Progress: 28% (45.2/156.8 MB)"
-      /Progress:\s+(\d+)%\s+\((\d+\.?\d*)\/(\d+\.?\d*)\s+MB\)/i,
-      // Pattern 4: Simple percentage "28%"
-      /(\d+)%/
-    ];
-
-    for (const pattern of patterns) {
-      const match = output.match(pattern);
-      if (match) {
-        if (pattern === patterns[3]) { // Simple percentage
-          const percent = parseInt(match[1]);
-          addWebSocketLog(`🎯 Found progress: ${percent}%`);
-          setDownloadProgress(prev => prev ? { ...prev, percent } : null);
-        } else if (pattern === patterns[2]) { // Pattern 3 format
-          const [, percent, downloaded, total] = match;
-          const progress = {
-            downloaded: parseFloat(downloaded),
-            total: parseFloat(total),
-            percent: parseInt(percent),
-            speed: 'Unknown'
-          };
-          addWebSocketLog(`🎯 Found detailed progress: ${progress.percent}% (${progress.downloaded}/${progress.total} MB)`);
-          setDownloadProgress(progress);
-        } else { // Pattern 1 & 2 format
-          const [, downloaded, total, percent] = match;
-          const progress = {
-            downloaded: parseFloat(downloaded),
-            total: parseFloat(total),
-            percent: parseInt(percent),
-            speed: 'Unknown'
-          };
-          addWebSocketLog(`🎯 Found detailed progress: ${progress.percent}% (${progress.downloaded}/${progress.total} MB)`);
-          setDownloadProgress(progress);
-        }
-        break;
-      }
-    }
-  };
-
-  const addWebSocketLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setWebsocketLogs(prev => [...prev, `[${timestamp}] ${message}`]);
-  };
-
-  const clearWebSocketLogs = () => {
-    setWebsocketLogs([]);
-  };
-
-  // Alternative: Polling-based progress tracking
-  const trackDownloadWithPolling = async (expectedSize: number = 100) => {
-    addWebSocketLog('🔄 Starting polling-based progress tracking...');
-    
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15; // Simulate progress
-      
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        addWebSocketLog('✅ Download completed (simulated)');
-      }
-      
-      const downloaded = (expectedSize * progress) / 100;
-      const speed = (Math.random() * 5 + 1).toFixed(1); // Random speed
-      
-      setDownloadProgress({
-        downloaded: parseFloat(downloaded.toFixed(1)),
-        total: expectedSize,
-        percent: Math.round(progress),
-        speed: `${speed} MB/s`
-      });
-      
-      addWebSocketLog(`📊 Progress: ${Math.round(progress)}% (${downloaded.toFixed(1)}/${expectedSize} MB)`);
-    }, 1000);
-    
-    return interval;
-  };
-
-  const testPollingProgress = () => {
-    addWebSocketLog('🧪 Testing polling-based progress...');
-    trackDownloadWithPolling(156.8); // Simulate 156.8 MB download
-  };
 
   const installVersion = async (serverType: string, version: string) => {
     const downloadUrl = downloadUrls[serverType]?.[version];
@@ -521,18 +328,29 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     const getEstimatedSize = (serverType: string) => {
       const sizes = {
         paper: 45.2,
-        purpur: 48.1,
+        purpur: 55.1,
         fabric: 1.2, // Fabric is just installer
-        forge: 52.8,
-        neoforge: 48.9,
-        velocity: 15.6,
-        mohist: 78.3,
-        archlight: 65.4
+        forge: 68.8,
+        neoforge: 118.9,
+        velocity: 18.6,
+        mohist: 130.3,
+        archlight: 10.4
       };
       return sizes[serverType as keyof typeof sizes] || 50.0;
     };
 
     const estimatedSize = getEstimatedSize(serverType);
+    
+    // Determine filename based on server type
+    const getFileName = (serverType: string) => {
+      if (serverType === 'forge' || serverType === 'neoforge') {
+        return 'server.jar.zip'; // Keep as zip for forge/neoforge
+      }
+      return 'server.jar'; // Regular jar for others
+    };
+
+    const fileName = getFileName(serverType);
+    const needsUnzip = serverType === 'forge' || serverType === 'neoforge';
 
     try {
       const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/pull`, {
@@ -545,22 +363,22 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
         body: JSON.stringify({
           url: downloadUrl,
           directory: '/',
-          filename: 'server.jar'
+          filename: fileName
         })
       });
 
       if (response.ok) {
-        // Start progress tracking
+        // Start progress tracking immediately
         let progress = 0;
         const totalDuration = 30000; // 30 seconds
         const updateInterval = 1000; // Update every second
-        const totalUpdates = totalDuration / updateInterval;
         
+        // Initialize progress immediately
         setDownloadProgress({
           downloaded: 0,
           total: estimatedSize,
           percent: 0,
-          speed: '0 MB/s'
+          speed: 'Starting...'
         });
 
         const progressInterval = setInterval(() => {
@@ -581,19 +399,79 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
           if (progress >= 100) {
             clearInterval(progressInterval);
             
-            // Installation complete
-            setTimeout(() => {
-              setInstallStatus('success');
-              setInstallMessage(`${serverType} ${version} installed successfully!`);
-              setInstallingVersion(null);
-              setDownloadProgress(null);
-              
-              // Clear success message after 5 seconds
+            // Handle post-download processing
+            if (needsUnzip) {
+              // For Forge and Neo Forge - wait 10 seconds then unzip
+              setTimeout(async () => {
+                setInstallMessage(`Extracting ${serverType} ${version}...`);
+                setDownloadProgress({
+                  downloaded: estimatedSize,
+                  total: estimatedSize,
+                  percent: 100,
+                  speed: 'Extracting...'
+                });
+                
+                try {
+                  // Unzip the file
+                  const unzipResponse = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/decompress`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${apiKey}`,
+                      'Accept': 'Application/vnd.pterodactyl.v1+json',
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      root: '/',
+                      file: 'server.jar.zip'
+                    })
+                  });
+                  
+                  if (unzipResponse.ok) {
+                    // Wait a bit for extraction to complete
+                    setTimeout(() => {
+                      setInstallStatus('success');
+                      setInstallMessage(`${serverType} ${version} installed and extracted successfully!`);
+                      setInstallingVersion(null);
+                      setDownloadProgress(null);
+                      
+                      // Clear success message after 5 seconds
+                      setTimeout(() => {
+                        setInstallStatus('idle');
+                        setInstallMessage('');
+                      }, 5000);
+                    }, 3000);
+                  } else {
+                    throw new Error(`Extraction failed: ${unzipResponse.status} ${unzipResponse.statusText}`);
+                  }
+                } catch (extractError) {
+                  console.error('Extraction error:', extractError);
+                  setInstallStatus('error');
+                  setInstallMessage(`Installation succeeded but extraction failed: ${extractError instanceof Error ? extractError.message : 'Unknown error'}`);
+                  setInstallingVersion(null);
+                  setDownloadProgress(null);
+                  
+                  // Clear error message after 5 seconds
+                  setTimeout(() => {
+                    setInstallStatus('idle');
+                    setInstallMessage('');
+                  }, 5000);
+                }
+              }, 10000); // Wait 10 seconds before unzipping
+            } else {
+              // For other server types - complete immediately
               setTimeout(() => {
-                setInstallStatus('idle');
-                setInstallMessage('');
-              }, 5000);
-            }, 1000);
+                setInstallStatus('success');
+                setInstallMessage(`${serverType} ${version} installed successfully!`);
+                setInstallingVersion(null);
+                setDownloadProgress(null);
+                
+                // Clear success message after 5 seconds
+                setTimeout(() => {
+                  setInstallStatus('idle');
+                  setInstallMessage('');
+                }, 5000);
+              }, 1000);
+            }
           }
         }, updateInterval);
 
@@ -680,81 +558,6 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-8">
-        {/* WebSocket Test Panel */}
-        <div className="mb-6 p-6 rounded-xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
-              <span>🧪</span>
-              <span>WebSocket Progress Test</span>
-            </h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={testWebSocketConnection}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
-              >
-                Test WebSocket
-              </button>
-              <button
-                onClick={testPollingProgress}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
-              >
-                Test Polling
-              </button>
-              <button
-                onClick={clearWebSocketLogs}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors text-sm"
-              >
-                Clear Logs
-              </button>
-            </div>
-          </div>
-          
-          {/* WebSocket Logs */}
-          <div className="bg-slate-900/50 rounded-lg p-4 max-h-64 overflow-y-auto">
-            <div className="text-xs font-mono text-slate-300 space-y-1">
-              {websocketLogs.length === 0 ? (
-                <div className="text-slate-500 italic">Click "Test WebSocket" to start testing...</div>
-              ) : (
-                websocketLogs.map((log, index) => (
-                  <div key={index} className="whitespace-pre-wrap break-all">
-                    {log}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          
-          {/* Download Progress Test Display */}
-          {downloadProgress && (
-            <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <h4 className="text-blue-100 font-medium mb-2">📊 Detected Download Progress:</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="text-blue-200">
-                  <span className="font-medium">Progress:</span> {downloadProgress.percent}%
-                </div>
-                <div className="text-blue-200">
-                  <span className="font-medium">Downloaded:</span> {downloadProgress.downloaded} MB
-                </div>
-                <div className="text-blue-200">
-                  <span className="font-medium">Total:</span> {downloadProgress.total} MB
-                </div>
-                <div className="text-blue-200">
-                  <span className="font-medium">Speed:</span> {downloadProgress.speed}
-                </div>
-              </div>
-              
-              {/* Progress Bar */}
-              <div className="mt-3">
-                <div className="w-full bg-slate-700/50 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${downloadProgress.percent}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Install Status Notification */}
         {installStatus !== 'idle' && (
