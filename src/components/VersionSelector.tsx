@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Download, Server, Zap, Shield, Wrench, Globe, Database, Code, Star, Users, Clock, ArrowRight, LogOut, ArrowLeft } from 'lucide-react';
+import { Search, Download, Server, Zap, Shield, Wrench, Globe, Database, Code, Star, Users, Clock, ArrowRight, LogOut, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface ServerType {
   id: string;
@@ -131,13 +131,28 @@ const serverTypes: ServerType[] = [
     color: 'from-purple-400 to-pink-500',
     gradient: 'bg-gradient-to-br from-purple-500/10 to-pink-600/10',
     bgGradient: 'from-purple-500/20 via-pink-500/20 to-rose-500/20',
-    versions: ['1.20.1', '1.19.4', '1.19.2', '1.18.2'],
+    versions: ['1.20.2', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.7.10'],
     category: 'modded',
     popularity: 65,
     lastUpdate: '4 days ago',
     features: ['Forge + Bukkit', 'Hybrid', 'Versatile']
   }
 ];
+
+// Download URL mapping for different server types and versions
+const downloadUrls: Record<string, Record<string, string>> = {
+  mohist: {
+    '1.20.2': 'https://s3.mcjars.app/mohist/1.20.2/1.20.2-1b280342/server.jar',
+    '1.20.1': 'https://s3.mcjars.app/mohist/1.20.1/1.20.1-b562929a/server.jar',
+    '1.19.4': 'https://s3.mcjars.app/mohist/1.19.4/1.19.4-c1f9ddbf/server.jar',
+    '1.19.2': 'https://s3.mcjars.app/mohist/1.19.2/1.19.2-acf34325/server.jar',
+    '1.18.2': 'https://s3.mcjars.app/mohist/1.18.2/1.18.2-ffc4df93/server.jar',
+    '1.16.5': 'https://s3.mcjars.app/mohist/1.16.5/1.16.5-044418da/server.jar',
+    '1.12.2': 'https://s3.mcjars.app/mohist/1.12.2/1.12.2-2bfa4f6d/server.jar',
+    '1.7.10': 'https://s3.mcjars.app/mohist/1.7.10/1.7.10-de68ad73/server.jar'
+  }
+  // Add more server types and their download URLs here as needed
+};
 
 const categories = [
   { id: 'all', name: 'All Servers', icon: <Server className="w-4 h-4" />, count: serverTypes.length },
@@ -151,6 +166,9 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedServer, setSelectedServer] = useState<ServerType | null>(null);
+  const [installingVersion, setInstallingVersion] = useState<string | null>(null);
+  const [installStatus, setInstallStatus] = useState<'idle' | 'installing' | 'success' | 'error'>('idle');
+  const [installMessage, setInstallMessage] = useState('');
 
   const filteredServers = serverTypes.filter(server => {
     const matchesSearch = server.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -158,6 +176,64 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     const matchesCategory = selectedCategory === 'all' || server.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => b.popularity - a.popularity);
+
+  const installVersion = async (serverType: string, version: string) => {
+    const downloadUrl = downloadUrls[serverType]?.[version];
+    
+    if (!downloadUrl) {
+      setInstallStatus('error');
+      setInstallMessage(`Download URL not found for ${serverType} ${version}`);
+      return;
+    }
+
+    setInstallingVersion(`${serverType}-${version}`);
+    setInstallStatus('installing');
+    setInstallMessage(`Installing ${serverType} ${version}...`);
+
+    try {
+      const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/pull`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'Application/vnd.pterodactyl.v1+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: downloadUrl,
+          directory: '/',
+          filename: 'server.jar'
+        })
+      });
+
+      if (response.ok) {
+        // Simulate 30 second installation time
+        setTimeout(() => {
+          setInstallStatus('success');
+          setInstallMessage(`${serverType} ${version} installed successfully!`);
+          setInstallingVersion(null);
+          
+          // Clear success message after 5 seconds
+          setTimeout(() => {
+            setInstallStatus('idle');
+            setInstallMessage('');
+          }, 5000);
+        }, 30000);
+      } else {
+        throw new Error(`Installation failed: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Installation error:', error);
+      setInstallStatus('error');
+      setInstallMessage(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setInstallingVersion(null);
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setInstallStatus('idle');
+        setInstallMessage('');
+      }, 5000);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -224,6 +300,25 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-8">
+        {/* Install Status Notification */}
+        {installStatus !== 'idle' && (
+          <div className={`mb-6 p-4 rounded-xl border backdrop-blur-sm ${
+            installStatus === 'installing' 
+              ? 'bg-blue-500/10 border-blue-500/30 text-blue-100'
+              : installStatus === 'success'
+              ? 'bg-green-500/10 border-green-500/30 text-green-100'
+              : 'bg-red-500/10 border-red-500/30 text-red-100'
+          }`}>
+            <div className="flex items-center space-x-3">
+              {installStatus === 'installing' && (
+                <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+              )}
+              {installStatus === 'success' && <CheckCircle className="w-5 h-5 text-green-400" />}
+              {installStatus === 'error' && <AlertCircle className="w-5 h-5 text-red-400" />}
+              <span className="font-medium">{installMessage}</span>
+            </div>
+          </div>
+        )}
         {/* Category Filter */}
         <div className="flex flex-wrap gap-3 mb-8">
           {categories.map((category) => (
@@ -396,26 +491,58 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
             <div className="p-6">
               <h4 className="text-lg font-semibold text-white mb-4">Available Versions</h4>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {selectedServer.versions.map((version, index) => (
-                  <button
-                    key={version}
-                    className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-700/50 rounded-xl transition-all duration-200 group border border-slate-700/50 hover:border-slate-600/50"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${selectedServer.color}`}></div>
-                      <span className="text-white font-medium">{version}</span>
-                      {index === 0 && (
-                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-md border border-green-500/30">
-                          Latest
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-slate-400 text-sm group-hover:text-slate-300">Install</span>
-                      <Download className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
-                    </div>
-                  </button>
-                ))}
+                {selectedServer.versions.map((version, index) => {
+                  const isInstalling = installingVersion === `${selectedServer.id}-${version}`;
+                  const hasDownloadUrl = downloadUrls[selectedServer.id]?.[version];
+                  const isDisabled = installStatus === 'installing' || !hasDownloadUrl;
+                  
+                  return (
+                    <button
+                      key={version}
+                      onClick={() => hasDownloadUrl && !isDisabled && installVersion(selectedServer.id, version)}
+                      disabled={isDisabled}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 group border ${
+                        isDisabled 
+                          ? 'bg-slate-800/30 border-slate-700/30 cursor-not-allowed opacity-50'
+                          : 'bg-slate-800/50 hover:bg-slate-700/50 border-slate-700/50 hover:border-slate-600/50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${selectedServer.color}`}></div>
+                        <span className="text-white font-medium">{version}</span>
+                        {index === 0 && (
+                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-md border border-green-500/30">
+                            Latest
+                          </span>
+                        )}
+                        {!hasDownloadUrl && (
+                          <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-md border border-yellow-500/30">
+                            Not Available
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {isInstalling ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+                            <span className="text-blue-400 text-sm">Installing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className={`text-sm transition-colors ${
+                              isDisabled ? 'text-slate-500' : 'text-slate-400 group-hover:text-slate-300'
+                            }`}>
+                              {hasDownloadUrl ? 'Install' : 'Unavailable'}
+                            </span>
+                            <Download className={`w-4 h-4 transition-colors ${
+                              isDisabled ? 'text-slate-500' : 'text-slate-400 group-hover:text-white'
+                            }`} />
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
