@@ -296,6 +296,13 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
   const [installingVersion, setInstallingVersion] = useState<string | null>(null);
   const [installStatus, setInstallStatus] = useState<'idle' | 'installing' | 'success' | 'error'>('idle');
   const [installMessage, setInstallMessage] = useState('');
+  const [downloadProgress, setDownloadProgress] = useState<{
+    downloaded: number;
+    total: number;
+    percent: number;
+    speed: string;
+  } | null>(null);
+  const [websocketLogs, setWebsocketLogs] = useState<string[]>([]);
 
   const filteredServers = serverTypes.filter(server => {
     const matchesSearch = server.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -303,6 +310,157 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     const matchesCategory = selectedCategory === 'all' || server.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => b.popularity - a.popularity);
+
+  // WebSocket Test Functions
+  const getWebSocketToken = async () => {
+    try {
+      console.log('🔍 Testing WebSocket token request...');
+      const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/websocket`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'Application/vnd.pterodactyl.v1+json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ WebSocket token received:', data);
+      
+      addWebSocketLog(`✅ WebSocket token obtained successfully`);
+      addWebSocketLog(`📍 Socket URL: ${data.data.socket}`);
+      addWebSocketLog(`🔑 Token length: ${data.data.token.length} chars`);
+      
+      return data.data;
+    } catch (error) {
+      console.error('❌ WebSocket token error:', error);
+      addWebSocketLog(`❌ Failed to get WebSocket token: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
+    }
+  };
+
+  const testWebSocketConnection = async () => {
+    try {
+      addWebSocketLog('🚀 Starting WebSocket connection test...');
+      
+      const { token, socket } = await getWebSocketToken();
+      
+      addWebSocketLog('🔌 Connecting to WebSocket...');
+      const ws = new WebSocket(socket);
+      
+      ws.onopen = () => {
+        addWebSocketLog('✅ WebSocket connection established');
+        
+        // Authenticate
+        ws.send(JSON.stringify({
+          event: 'auth',
+          args: [token]
+        }));
+        addWebSocketLog('🔐 Authentication sent');
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          console.log('📨 WebSocket message:', message);
+          
+          addWebSocketLog(`📨 Event: ${message.event}`);
+          
+          if (message.event === 'console output') {
+            const output = message.args[0];
+            addWebSocketLog(`📄 Console: ${output}`);
+            
+            // Test parsing download progress
+            parseDownloadProgress(output);
+          } else if (message.event === 'auth success') {
+            addWebSocketLog('✅ WebSocket authentication successful');
+          } else if (message.event === 'jwt error') {
+            addWebSocketLog(`❌ JWT Error: ${message.args[0]}`);
+          } else {
+            addWebSocketLog(`ℹ️ Other event: ${JSON.stringify(message)}`);
+          }
+        } catch (error) {
+          addWebSocketLog(`❌ Error parsing message: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      };
+      
+      ws.onclose = (event) => {
+        addWebSocketLog(`🔌 WebSocket closed: Code ${event.code} - ${event.reason || 'No reason'}`);
+      };
+      
+      ws.onerror = (error) => {
+        addWebSocketLog(`❌ WebSocket error: ${error}`);
+      };
+      
+      // Close connection after 30 seconds for testing
+      setTimeout(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+          addWebSocketLog('⏰ Test completed - connection closed');
+        }
+      }, 30000);
+      
+    } catch (error) {
+      addWebSocketLog(`❌ WebSocket test failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const parseDownloadProgress = (output: string) => {
+    // Test different progress patterns
+    const patterns = [
+      // Pattern 1: "Downloaded 45.2MB of 156.8MB (28%)"
+      /Downloaded\s+(\d+\.?\d*)\s*MB\s+of\s+(\d+\.?\d*)\s*MB\s+\((\d+)%\)/i,
+      // Pattern 2: "45.2MB/156.8MB (28%)"
+      /(\d+\.?\d*)\s*MB\/(\d+\.?\d*)\s*MB\s+\((\d+)%\)/i,
+      // Pattern 3: "Progress: 28% (45.2/156.8 MB)"
+      /Progress:\s+(\d+)%\s+\((\d+\.?\d*)\/(\d+\.?\d*)\s+MB\)/i,
+      // Pattern 4: Simple percentage "28%"
+      /(\d+)%/
+    ];
+
+    for (const pattern of patterns) {
+      const match = output.match(pattern);
+      if (match) {
+        if (pattern === patterns[3]) { // Simple percentage
+          const percent = parseInt(match[1]);
+          addWebSocketLog(`🎯 Found progress: ${percent}%`);
+          setDownloadProgress(prev => prev ? { ...prev, percent } : null);
+        } else if (pattern === patterns[2]) { // Pattern 3 format
+          const [, percent, downloaded, total] = match;
+          const progress = {
+            downloaded: parseFloat(downloaded),
+            total: parseFloat(total),
+            percent: parseInt(percent),
+            speed: 'Unknown'
+          };
+          addWebSocketLog(`🎯 Found detailed progress: ${progress.percent}% (${progress.downloaded}/${progress.total} MB)`);
+          setDownloadProgress(progress);
+        } else { // Pattern 1 & 2 format
+          const [, downloaded, total, percent] = match;
+          const progress = {
+            downloaded: parseFloat(downloaded),
+            total: parseFloat(total),
+            percent: parseInt(percent),
+            speed: 'Unknown'
+          };
+          addWebSocketLog(`🎯 Found detailed progress: ${progress.percent}% (${progress.downloaded}/${progress.total} MB)`);
+          setDownloadProgress(progress);
+        }
+        break;
+      }
+    }
+  };
+
+  const addWebSocketLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setWebsocketLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+  };
+
+  const clearWebSocketLogs = () => {
+    setWebsocketLogs([]);
+  };
 
   const installVersion = async (serverType: string, version: string) => {
     const downloadUrl = downloadUrls[serverType]?.[version];
@@ -427,6 +585,76 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-8">
+        {/* WebSocket Test Panel */}
+        <div className="mb-6 p-6 rounded-xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+              <span>🧪</span>
+              <span>WebSocket Progress Test</span>
+            </h3>
+            <div className="flex space-x-2">
+              <button
+                onClick={testWebSocketConnection}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+              >
+                Test WebSocket
+              </button>
+              <button
+                onClick={clearWebSocketLogs}
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors text-sm"
+              >
+                Clear Logs
+              </button>
+            </div>
+          </div>
+          
+          {/* WebSocket Logs */}
+          <div className="bg-slate-900/50 rounded-lg p-4 max-h-64 overflow-y-auto">
+            <div className="text-xs font-mono text-slate-300 space-y-1">
+              {websocketLogs.length === 0 ? (
+                <div className="text-slate-500 italic">Click "Test WebSocket" to start testing...</div>
+              ) : (
+                websocketLogs.map((log, index) => (
+                  <div key={index} className="whitespace-pre-wrap break-all">
+                    {log}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          
+          {/* Download Progress Test Display */}
+          {downloadProgress && (
+            <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <h4 className="text-blue-100 font-medium mb-2">📊 Detected Download Progress:</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="text-blue-200">
+                  <span className="font-medium">Progress:</span> {downloadProgress.percent}%
+                </div>
+                <div className="text-blue-200">
+                  <span className="font-medium">Downloaded:</span> {downloadProgress.downloaded} MB
+                </div>
+                <div className="text-blue-200">
+                  <span className="font-medium">Total:</span> {downloadProgress.total} MB
+                </div>
+                <div className="text-blue-200">
+                  <span className="font-medium">Speed:</span> {downloadProgress.speed}
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="mt-3">
+                <div className="w-full bg-slate-700/50 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${downloadProgress.percent}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Install Status Notification */}
         {installStatus !== 'idle' && (
           <div className={`mb-6 p-4 rounded-xl border backdrop-blur-sm ${
