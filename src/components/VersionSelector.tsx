@@ -456,7 +456,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
                     setInstallMessage('');
                   }, 5000);
                 }
-              }, 30000); // Wait 10 seconds before unzipping
+              }, 50000); // Wait 10 seconds before unzipping
             } else {
               // For other server types - complete immediately
               setTimeout(() => {
