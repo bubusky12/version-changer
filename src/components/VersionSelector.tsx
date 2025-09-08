@@ -40,23 +40,23 @@ const serverTypes: ServerType[] = [
     features: ['High Performance', 'Plugin Support', 'Anti-Cheat']
   },
   {
-    id: 'spigot',
-    name: 'Spigot',
-    description: 'Popular Minecraft server platform with extensive plugin ecosystem',
+    id: 'neoforge',
+    name: 'Neo Forge',
+    description: 'Modern Minecraft modding platform forked from Forge with enhanced features',
     icon: <Zap className="w-8 h-8" />,
     color: 'from-yellow-400 to-orange-500',
     gradient: 'bg-gradient-to-br from-yellow-500/10 to-orange-600/10',
     bgGradient: 'from-yellow-500/20 via-orange-500/20 to-red-500/20',
     versions: ['1.20.4', '1.20.3', '1.20.2', '1.20.1', '1.19.4', '1.19.3'],
-    category: 'minecraft',
+    category: 'modded',
     popularity: 88,
     lastUpdate: '1 week ago',
-    features: ['Plugin API', 'Stable', 'Community']
+    features: ['Modern API', 'Enhanced Performance', 'Active Development']
   },
   {
-    id: 'bukkit',
-    name: 'Bukkit',
-    description: 'Original Minecraft server modification with reliable plugin framework',
+    id: 'archlight',
+    name: 'Archlight',
+    description: 'High-performance Minecraft server software with advanced optimization features',
     icon: <Shield className="w-8 h-8" />,
     color: 'from-blue-400 to-purple-500',
     gradient: 'bg-gradient-to-br from-blue-500/10 to-purple-600/10',
@@ -65,7 +65,7 @@ const serverTypes: ServerType[] = [
     category: 'minecraft',
     popularity: 75,
     lastUpdate: '3 days ago',
-    features: ['Original API', 'Lightweight', 'Stable']
+    features: ['High Performance', 'Optimized', 'Modern']
   },
   {
     id: 'forge',
@@ -110,18 +110,18 @@ const serverTypes: ServerType[] = [
     features: ['High Performance', 'Security', 'Modern']
   },
   {
-    id: 'waterfall',
-    name: 'Waterfall',
-    description: 'Enhanced BungeeCord fork with improved performance and features',
+    id: 'purpur',
+    name: 'Purpur',
+    description: 'Feature-rich Paper fork with extensive customization and performance improvements',
     icon: <Database className="w-8 h-8" />,
-    color: 'from-blue-400 to-cyan-500',
-    gradient: 'bg-gradient-to-br from-blue-400/10 to-cyan-600/10',
-    bgGradient: 'from-blue-400/20 via-cyan-500/20 to-teal-500/20',
-    versions: ['1.20', '1.19', '1.18', '1.17'],
-    category: 'proxy',
-    popularity: 70,
-    lastUpdate: '2 weeks ago',
-    features: ['BungeeCord Compatible', 'Improved', 'Stable']
+    color: 'from-purple-400 to-pink-500',
+    gradient: 'bg-gradient-to-br from-purple-400/10 to-pink-600/10',
+    bgGradient: 'from-purple-400/20 via-pink-500/20 to-rose-500/20',
+    versions: ['1.20.4', '1.20.3', '1.20.2', '1.20.1', '1.19.4'],
+    category: 'minecraft',
+    popularity: 82,
+    lastUpdate: '4 days ago',
+    features: ['Customizable', 'High Performance', 'Feature-Rich']
   },
   {
     id: 'mohist',
