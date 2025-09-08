@@ -24,7 +24,7 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
     setError(null);
     
     try {
-      const response = await fetch('https://console.exluhost.my.id/api/client', {
+      const response = await fetch('konek/api/client', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -136,9 +136,9 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                    Select Your Server
+                    Pilih Server Kamu
                   </h1>
-                  <p className="text-slate-400 text-lg">Choose a server to manage its version</p>
+                  <p className="text-slate-400 text-lg">Pilih server mana untuk mengelola versi server</p>
                 </div>
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
                     {server.name}
                   </h3>
                   <p className="text-slate-400 text-sm">
-                    Click to manage this server's version
+                    Klik untuk mengelola versi server ini
                   </p>
                 </div>
                 
@@ -211,10 +211,10 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
                 <div className="flex items-center justify-between text-xs text-slate-400 mt-auto">
                   <div className="flex items-center space-x-1">
                     <Clock className="w-3 h-3" />
-                    <span>Ready to configure</span>
+                    <span>Siap untuk di konfigurasi</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <span>Select</span>
+                    <span>Pilih</span>
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -232,10 +232,10 @@ export default function ServerSelector({ apiKey, onServerSelect, onLogout }: Ser
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
               <Server className="relative w-20 h-20 text-slate-600 mx-auto mb-6" />
             </div>
-            <h3 className="text-2xl font-semibold text-slate-400 mb-3">No servers found</h3>
+            <h3 className="text-2xl font-semibold text-slate-400 mb-3">Tidak ada server yang di temukan</h3>
             <p className="text-slate-500 max-w-md mx-auto">
               {searchTerm 
-                ? "Try adjusting your search terms to find your servers."
+                ? "Silahkan cari baik baik server kamu."
                 : "No servers are available in your account."
               }
             </p>
