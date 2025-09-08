@@ -13,7 +13,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
   const validateApiKey = async (apiKey: string): Promise<boolean> => {
     try {
-      const response = await fetch('https://console.exluhost.my.id/api/client', {
+      const response = await fetch('konek/api/client', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -81,7 +81,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             Pterodactyl Login
           </h1>
           <p className="text-slate-400 text-lg">
-            Enter your API key to access your servers
+            Masukan client key kamu untuk mengakses server kamu
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                   </>
                 ) : (
                   <>
-                    <span>Verify API Key</span>
+                    <span>Verifikasi API Key</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -161,10 +161,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             <div className="flex items-start space-x-3">
               <Shield className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="text-slate-300 font-medium mb-1">Secure Connection</p>
+                <p className="text-slate-300 font-medium mb-1">Koneksi Aman</p>
                 <p className="text-slate-400 leading-relaxed">
-                  Your API key is used only to authenticate with your Pterodactyl panel. 
-                  We never store your credentials.
+                  API kamu hanya digunakan untuk autentikasi dengan panel Pterodactyl. 
+                  Jaga baik baik API KEY kamu.
                 </p>
               </div>
             </div>
@@ -174,9 +174,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         {/* Help Text */}
         <div className="mt-6 text-center">
           <p className="text-slate-400 text-sm">
-            Need help finding your API key? 
+            Butuh bantuan untuk menemukan API KEY kamu? 
             <a href="#" className="text-blue-400 hover:text-blue-300 ml-1 underline">
-              Check our documentation
+              Kontak kami di discord
             </a>
           </p>
         </div>
