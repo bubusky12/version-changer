@@ -517,6 +517,23 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     setInstallStatus('installing');
     setInstallMessage(`Installing ${serverType} ${version}...`);
 
+    // Get estimated file size based on server type (in MB)
+    const getEstimatedSize = (serverType: string) => {
+      const sizes = {
+        paper: 45.2,
+        purpur: 48.1,
+        fabric: 1.2, // Fabric is just installer
+        forge: 52.8,
+        neoforge: 48.9,
+        velocity: 15.6,
+        mohist: 78.3,
+        archlight: 65.4
+      };
+      return sizes[serverType as keyof typeof sizes] || 50.0;
+    };
+
+    const estimatedSize = getEstimatedSize(serverType);
+
     try {
       const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/pull`, {
         method: 'POST',
@@ -533,18 +550,53 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       });
 
       if (response.ok) {
-        // Simulate 30 second installation time
-        setTimeout(() => {
-          setInstallStatus('success');
-          setInstallMessage(`${serverType} ${version} installed successfully!`);
-          setInstallingVersion(null);
+        // Start progress tracking
+        let progress = 0;
+        const totalDuration = 30000; // 30 seconds
+        const updateInterval = 1000; // Update every second
+        const totalUpdates = totalDuration / updateInterval;
+        
+        setDownloadProgress({
+          downloaded: 0,
+          total: estimatedSize,
+          percent: 0,
+          speed: '0 MB/s'
+        });
+
+        const progressInterval = setInterval(() => {
+          // Simulate realistic download curve (faster at start, slower at end)
+          const increment = Math.random() * 8 + 2; // 2-10% per second
+          progress = Math.min(progress + increment, 100);
           
-          // Clear success message after 5 seconds
-          setTimeout(() => {
-            setInstallStatus('idle');
-            setInstallMessage('');
-          }, 5000);
-        }, 30000);
+          const downloaded = (estimatedSize * progress) / 100;
+          const speed = (Math.random() * 3 + 1).toFixed(1); // 1-4 MB/s
+          
+          setDownloadProgress({
+            downloaded: parseFloat(downloaded.toFixed(1)),
+            total: estimatedSize,
+            percent: Math.round(progress),
+            speed: `${speed} MB/s`
+          });
+          
+          if (progress >= 100) {
+            clearInterval(progressInterval);
+            
+            // Installation complete
+            setTimeout(() => {
+              setInstallStatus('success');
+              setInstallMessage(`${serverType} ${version} installed successfully!`);
+              setInstallingVersion(null);
+              setDownloadProgress(null);
+              
+              // Clear success message after 5 seconds
+              setTimeout(() => {
+                setInstallStatus('idle');
+                setInstallMessage('');
+              }, 5000);
+            }, 1000);
+          }
+        }, updateInterval);
+
       } else {
         throw new Error(`Installation failed: ${response.status} ${response.statusText}`);
       }
@@ -553,6 +605,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
       setInstallStatus('error');
       setInstallMessage(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setInstallingVersion(null);
+      setDownloadProgress(null);
       
       // Clear error message after 5 seconds
       setTimeout(() => {
@@ -705,21 +758,62 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
 
         {/* Install Status Notification */}
         {installStatus !== 'idle' && (
-          <div className={`mb-6 p-4 rounded-xl border backdrop-blur-sm ${
+          <div className={`mb-6 p-6 rounded-xl border backdrop-blur-sm ${
             installStatus === 'installing' 
               ? 'bg-blue-500/10 border-blue-500/30 text-blue-100'
               : installStatus === 'success'
               ? 'bg-green-500/10 border-green-500/30 text-green-100'
               : 'bg-red-500/10 border-red-500/30 text-red-100'
           }`}>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 mb-4">
               {installStatus === 'installing' && (
                 <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
               )}
               {installStatus === 'success' && <CheckCircle className="w-5 h-5 text-green-400" />}
               {installStatus === 'error' && <AlertCircle className="w-5 h-5 text-red-400" />}
-              <span className="font-medium">{installMessage}</span>
+              <span className="font-medium text-lg">{installMessage}</span>
             </div>
+            
+            {/* Progress Display for Installing */}
+            {installStatus === 'installing' && downloadProgress && (
+              <div className="space-y-3">
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-700/50 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${downloadProgress.percent}%` }}
+                  ></div>
+                </div>
+                
+                {/* Progress Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-300">📊</span>
+                    <span className="text-blue-200">
+                      <span className="font-medium">{downloadProgress.percent}%</span> Complete
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-300">💾</span>
+                    <span className="text-blue-200">
+                      <span className="font-medium">{downloadProgress.downloaded}</span> / {downloadProgress.total} MB
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-300">⚡</span>
+                    <span className="text-blue-200">
+                      Speed: <span className="font-medium">{downloadProgress.speed}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-300">⏱️</span>
+                    <span className="text-blue-200">
+                      ETA: <span className="font-medium">~{Math.ceil((100 - downloadProgress.percent) / 3)}s</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* Category Filter */}
