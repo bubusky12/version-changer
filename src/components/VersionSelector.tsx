@@ -353,7 +353,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
     const needsUnzip = serverType === 'forge' || serverType === 'neoforge';
 
     try {
-      const response = await fetch(`https://testing.exluhost.my.id/api/client/servers/${serverId}/files/pull`, {
+      const response = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/pull`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -413,7 +413,7 @@ export default function VersionSelector({ serverId, serverName, apiKey, onLogout
                 
                 try {
                   // Unzip the file
-                  const unzipResponse = await fetch(`https://testing.exluhost.my.id/api/client/servers/${serverId}/files/decompress`, {
+                  const unzipResponse = await fetch(`https://console.exluhost.my.id/api/client/servers/${serverId}/files/decompress`, {
                     method: 'POST',
                     headers: {
                       'Authorization': `Bearer ${apiKey}`,
